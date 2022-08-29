@@ -1,0 +1,10 @@
+
+images/valid_square.jpg
+*.json
+*.jpg
+*.exe
+*.o
+*.hpp
+*.dll
+*.inl
+*.a
