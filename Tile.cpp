@@ -5,7 +5,6 @@ void Tile::clearSources(){
     state = EMPTY;
 }
 void Tile::addSource(int i, int j){
-    printf("pushing source %d,%d\n",i,j);
     source.push_back(Vector2i(i,j));
 }
 
@@ -14,7 +13,6 @@ void Tile::addSource(Vector2i vec){
 }
 
 Vector2i Tile::pollSource(){
-    printf("there are %d sources left\n",source.size());
     if(source.empty()){
         return Vector2i(-1,-1);
     }

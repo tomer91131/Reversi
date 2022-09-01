@@ -2,6 +2,7 @@
 #define GAME_H
 
 #define BOARD_SIZE 8
+#define FRAME (BOARD_SIZE-1)
 // #define WHITE 0
 // #define BLACK 1
 #define PRINT_CHECKPOINTS 1
@@ -45,6 +46,7 @@ private:
     void clearAvailableMoves();
     Vector2i getDirection(int src_i, int src_j, int dst_i, int dst_j);
     void changeTextureForPlayer(int row, int col);
+    void findWinner();
 
 public:
     Game(/* args */);

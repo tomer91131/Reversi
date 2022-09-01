@@ -42,7 +42,6 @@ bool Game::initTextures(){
 }
 
 void Game::initBoard(){
-    checkpoint("initializing board\n")
     for (int i = 0; i < BOARD_SIZE; i++)
     {
         board.push_back(vector<Tile>());
@@ -54,12 +53,10 @@ void Game::initBoard(){
             
         }
     }
-    checkpoint("success\nsetting first pawns\n")
     board[3][3].setTileTexture(white_pawn_texture,WHITE);
     board[3][4].setTileTexture(black_pawn_texture,BLACK);
     board[4][4].setTileTexture(white_pawn_texture,WHITE);
     board[4][3].setTileTexture(black_pawn_texture,BLACK);
-    checkpoint("success\n")
 }
 
 void Game::updateWindow(){
@@ -86,13 +83,13 @@ bool Game::running(){
             break;
         case Event::MouseButtonPressed :
             Vector2i tile(getClickedTile());
-            printf("clicked %d, %d\n",tile.x,tile.y);
             if(board[tile.x][tile.y].getTileState() == VALID_MOVE){
                 makeMove(tile.x,tile.y);
                 clearAvailableMoves();
                 player_turn = (player_turn == WHITE)? BLACK:WHITE;
                 if (!addPossibleMoves()){
-                    printf("game ended");
+                    printf("game ended!\n");
+                    findWinner();
                 }
                 updateWindow();
             }
@@ -113,7 +110,7 @@ bool Game::pieceTurn(int row, int col){
 
 bool Game::findMoveUp(int row,int col){
     int i = row - 1,j = col;
-    if (i == 0 || !board[i][j].isCaptured() || pieceTurn(i,j)) {
+    if (i <= 0 || !board[i][j].isCaptured() || pieceTurn(i,j)) {
         return false;
     }
     while (i > 0 && board[i][j].isCaptured() && !pieceTurn(i,j)){
@@ -128,7 +125,7 @@ bool Game::findMoveUp(int row,int col){
 }
 bool Game::findMoveDown(int row,int col){
     int i = row + 1,j = col;
-    if(i == BOARD_SIZE || !board[i][j].isCaptured() || pieceTurn(i,j)){
+    if(i >= FRAME || !board[i][j].isCaptured() || pieceTurn(i,j)){
         return false;
     }
     while(i < BOARD_SIZE && board[i][j].isCaptured() && !pieceTurn(i,j)){
@@ -143,7 +140,7 @@ bool Game::findMoveDown(int row,int col){
 }
 bool Game::findMoveRight(int row,int col){
     int i = row,j = col + 1;
-    if (j == BOARD_SIZE || !board[i][j].isCaptured() || pieceTurn(i,j)){
+    if (j >= FRAME || !board[i][j].isCaptured() || pieceTurn(i,j)){
         return false;
     }
     while (j < BOARD_SIZE && board[i][j].isCaptured() && !pieceTurn(i,j)){
@@ -158,7 +155,7 @@ bool Game::findMoveRight(int row,int col){
 }
 bool Game::findMoveLeft(int row,int col){
     int i = row,j = col - 1;
-    if (j == 0 || !board[i][j].isCaptured() || pieceTurn(i,j)){
+    if (j <= 0 || !board[i][j].isCaptured() || pieceTurn(i,j)){
         return false;
     }
     while (j > 0 && board[i][j].isCaptured() && !pieceTurn(i,j)){
@@ -173,7 +170,7 @@ bool Game::findMoveLeft(int row,int col){
 }
 bool Game::findDiagonRU(int row,int col){
     int i = row - 1,j = col + 1;
-    if (i == 0 || j == BOARD_SIZE - 1 || !board[i][j].isCaptured() || pieceTurn(i,j)){
+    if (i <= 0 || j >= FRAME || !board[i][j].isCaptured() || pieceTurn(i,j)){
         return false;
     }
     while (i > 0 && j < BOARD_SIZE && board[i][j].isCaptured() && !pieceTurn(i,j)){
@@ -189,7 +186,7 @@ bool Game::findDiagonRU(int row,int col){
 }
 bool Game::findDiagonRD(int row,int col){
     int i = row + 1,j = col + 1;
-    if (i == BOARD_SIZE - 1 || j == BOARD_SIZE - 1 || !board[i][j].isCaptured() || pieceTurn(i,j)){
+    if (i >= FRAME || j >= FRAME || !board[i][j].isCaptured() || pieceTurn(i,j)){
         return false;
     }
     while (i < BOARD_SIZE && j < BOARD_SIZE && board[i][j].isCaptured() && !pieceTurn(i,j)){
@@ -205,7 +202,7 @@ bool Game::findDiagonRD(int row,int col){
 }
 bool Game::findDiagonLU(int row,int col){
     int i = row - 1,j = col - 1;
-    if (i == 0 || j == 0 || !board[i][j].isCaptured() || pieceTurn(i,j)){
+    if (i <= 0 || j <= 0 || !board[i][j].isCaptured() || pieceTurn(i,j)){
         return false;
     }
     while (i > 0 && j > 0 && board[i][j].isCaptured() && !pieceTurn(i,j)){
@@ -221,10 +218,10 @@ bool Game::findDiagonLU(int row,int col){
 }
 bool Game::findDiagonLD(int row,int col){
     int i = row + 1,j = col - 1;
-    if (i == 0 || j == 0 || !board[i][j].isCaptured() || pieceTurn(i,j)){
+    if (i >= FRAME || j <= 0 || !board[i][j].isCaptured() || pieceTurn(i,j)){
         return false;
     }
-    while (i > 0 && j > 0 && board[i][j].isCaptured() && !pieceTurn(i,j)){
+    while (i < BOARD_SIZE && j > 0 && board[i][j].isCaptured() && !pieceTurn(i,j)){
         j--;
         i++;
     }
@@ -257,7 +254,6 @@ bool Game::addPossibleMoves(){
         {
             if(pieceTurn(i,j)){
                 possible_moves = findCapturable(i,j) || possible_moves;
-                printf("added possible moves for %d, %d\n",i,j);
             }
         }
     }
@@ -284,7 +280,6 @@ void Game::makeMove(int row,int col){
     Vector2i source = board[row][col].pollSource();
     while(source.x != -1){
         Vector2i direction(getDirection(source.x, source.y, row, col));
-        printf("from %d, %d to %d,%d \n",source.x,source.y,row,col);
         int i = source.x + direction.x,j = source.y + direction.y;
         while (i != row || j != col){
             changeTextureForPlayer(i,j);
@@ -297,10 +292,8 @@ void Game::makeMove(int row,int col){
 }
 void Game::changeTextureForPlayer(int row, int col){
     if(player_turn == WHITE){
-            printf("setting %d , %d to be white \n",row,col);
             board[row][col].setTileTexture(white_pawn_texture,WHITE);
         }else{
-            printf("setting %d , %d to be black \n",row,col);
             board[row][col].setTileTexture(black_pawn_texture,BLACK);
         }
 }
@@ -319,7 +312,35 @@ void Game::clearAvailableMoves(){
 Vector2i Game::getClickedTile() const{
     Vector2i vec(sf::Mouse::getPosition(*window));
     int tmp = vec.x;
-    vec.x = vec.y / 100; // y axis is rows
-    vec.y = tmp / 100; // x axis is col
+    vec.x = vec.y / 100;
+    vec.y = tmp / 100;
     return vec;
+}
+
+void Game::findWinner(){
+    int white = 0,black = 0;
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            if(board[i][j].getTileState() == WHITE){
+                white++;
+                continue;
+            }
+            if(board[i][j].getTileState() == WHITE){
+                black++;
+                continue;
+            }
+        }
+        
+    }
+    if(black == white){
+        printf("ITS A TIE!");
+        return;
+    }
+    if(white > black){
+        printf("WHITE PLAYER WINS!");
+    }else{
+        printf("BLACK PLAYER WINS!");
+    }
 }
