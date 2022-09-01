@@ -5,16 +5,17 @@ void Tile::clearSources(){
     state = EMPTY;
 }
 void Tile::addSource(int i, int j){
+    printf("pushing source %d,%d\n",i,j);
     source.push_back(Vector2i(i,j));
-    state = VALID_MOVE;
 }
+
 void Tile::addSource(Vector2i vec){
     source.push_back(vec);
-    state = VALID_MOVE;
 }
 
 Vector2i Tile::pollSource(){
-    if(source.size() == 0){
+    printf("there are %d sources left\n",source.size());
+    if(source.empty()){
         return Vector2i(-1,-1);
     }
     Vector2i vec(source.back());
@@ -23,12 +24,8 @@ Vector2i Tile::pollSource(){
 }
 
 void Tile::setTileTexture(Texture &new_texture,state_t new_state){
-    if(texture == nullptr){
-        return;
-    }else{
         this->setTexture(new_texture);
         state = new_state;
-    }
 }
 state_t Tile::getTileState(){
     return this->state;
@@ -36,4 +33,8 @@ state_t Tile::getTileState(){
 
 void Tile::setTileState(state_t new_state){
     this->state = new_state;
+}
+
+bool Tile::isCaptured(){
+    return (state == WHITE || state == BLACK);
 }

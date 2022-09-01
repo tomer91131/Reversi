@@ -44,6 +44,7 @@ private:
     void makeMove(int row,int col);
     void clearAvailableMoves();
     Vector2i getDirection(int src_i, int src_j, int dst_i, int dst_j);
+    void changeTextureForPlayer(int row, int col);
 
 public:
     Game(/* args */);
@@ -53,7 +54,7 @@ public:
     Vector2i getClickedTile() const;
     bool addPossibleMoves();
     void updateWindow();
-    void findCapturable(int row,int col);
+    bool findCapturable(int row,int col);
     bool pieceTurn(int row, int col);
 };
 

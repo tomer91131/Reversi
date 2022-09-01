@@ -16,14 +16,15 @@ private:
     vector<Vector2i> source;  
     state_t state = EMPTY; 
 public:
-    Tile();
-    ~Tile();
+    Tile() = default;
+    ~Tile() = default;
     void clearSources();
     void addSource(int i,int j);
     void addSource(Vector2i vec);
     Vector2i pollSource();
-    void setTileTexture(Texture &new_texture,state_t new_state)};
+    void setTileTexture(Texture &new_texture,state_t new_state);
     state_t getTileState();
     void setTileState(state_t new_state);
-
+    bool isCaptured();
+};
 #endif
