@@ -45,10 +45,10 @@ void Game::initBoard(){
     checkpoint("initializing board\n")
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        board.push_back(vector<Sprite>());
+        board.push_back(vector<Tile>());
         for (int j = 0; j < BOARD_SIZE; j++)
         {
-            board[i].push_back(Sprite());
+            board[i].push_back(Tile());
             board[i][j].setPosition(100*j,100*i);
             
         }
@@ -69,29 +69,32 @@ void Game::updateWindow(){
         for (int j = 0; j < BOARD_SIZE; j++)
         {
             if(board[i][j].getTexture() != nullptr){
-                //printf("drawing %d,%d\n",i,j);
                 window->draw(board[i][j]);
             }
         }
     }
-    checkpoint("finished drawing-> displaying\n")
     window->display();
 }
 
 bool Game::running(){
     while (window->pollEvent(event)){
-        switch(event.type)
-        case Event::Closed:
+        switch(event.type){
+        case Event::Closed :
+            printf("closing");
             window->close();
             break;
-        case Event::MouseButtonPressed:
-            Vector2i tile = getClickedTile();
+        case Event::MouseButtonPressed :
+            Vector2i tile(getClickedTile());
+            printf("clicked %d, %d",tile.x,tile.y);
             if(board[tile.x][tile.y].getTexture() == &valid_square_texture){
                 makeMove(tile.x,tile.y);
-                findCapturable();
+                clearAvailableMoves();
+                player_turn = (player_turn == WHITE)? BLACK:WHITE;
+                addPossibleMoves();
                 updateWindow();
             }
-        
+            break;
+        }
     }
     return window->isOpen();
 }
@@ -113,6 +116,7 @@ bool Game::findMoveUp(int row,int col){
     }
     if (board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(row,col);
         return true;
     }
     return false;
@@ -125,6 +129,7 @@ bool Game::findMoveDown(int row,int col){
     }
     if(i < BOARD_SIZE && board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(i,j);
         return true;
     }
     return false;
@@ -137,6 +142,7 @@ bool Game::findMoveRight(int row,int col){
     }
     if (j < BOARD_SIZE && board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(i,j);
         return true;
     }
     return false;
@@ -149,6 +155,7 @@ bool Game::findMoveLeft(int row,int col){
     }
     if (board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(i,j);
         return true;
     }
     return false;
@@ -162,6 +169,7 @@ bool Game::findDiagonRU(int row,int col){
     }
     if (j < BOARD_SIZE && board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(i,j);
         return true;
     }
     return false;
@@ -175,6 +183,7 @@ bool Game::findDiagonRD(int row,int col){
     }
     if (i < BOARD_SIZE && j < BOARD_SIZE && board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(i,j);
         return true;
     }
     return false;
@@ -188,6 +197,7 @@ bool Game::findDiagonLU(int row,int col){
     }
     if (board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(i,j);
         return true;
     }
     return false;
@@ -201,6 +211,7 @@ bool Game::findDiagonLD(int row,int col){
     }
     if (i < BOARD_SIZE && board[i][j].getTexture() == nullptr){
         board[i][j].setTexture(valid_square_texture);
+        board[i][j].addSource(i,j);
         return true;
     }
     return false;
@@ -236,13 +247,55 @@ bool Game::addPossibleMoves(){
     
 }
 
+Vector2i Game::getDirection(int src_i, int src_j, int dst_i, int dst_j){
+    Vector2i vec(0,0);
+    if (src_i < dst_i){
+        vec.x = 1;
+    }else if (src_i > dst_i){
+        vec.x = -1;
+    }
+    if (src_j < dst_j){
+        vec.y = 1;
+    }else if (src_j > dst_j){
+        vec.y = -1;
+    }
+    return vec;
+}
+
 void Game::makeMove(int row,int col){
-    
+    Vector2i source = board[row][col].pollSource();
+    while(source.x != -1){
+        Vector2i direction(getDirection(source.x, source.y, row, col));
+        int i = source.x + direction.x,j = source.y + direction.y;
+        while (i != row && j != col){
+            if(player_turn == WHITE){
+                board[i][j].setTexture(white_pawn_texture);
+            }else{
+                board[i][j].setTexture(black_pawn_texture);
+            }
+            i += direction.x;
+            j += direction.y;
+        }
+        source = board[row][col].pollSource();     
+    }
+}
+
+void Game::clearAvailableMoves(){
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            if(board[i][j].getTexture() == &valid_square_texture){
+                board[i][j].setTexture()//need to change everything - solution is tile state field.
+                board[i][j].clearSources();
+            }
+        }
+    }
 }
 
 Vector2i Game::getClickedTile() const{
-    Vector2i vec(sf::Mouse::getPosition(window));
+    Vector2i vec(sf::Mouse::getPosition(*window));
     vec.x = vec.x / 8;
     vec.y = vec.y / 8;
-    retrun vec;
+    return vec;
 }
