@@ -35,6 +35,8 @@ private:
   bool initTextures();
   void initBoard();
 
+  void updateWindow();
+
   bool findMoveUp(int row, int col);
   bool findMoveDown(int row, int col);
   bool findMoveRight(int row, int col);
@@ -44,10 +46,17 @@ private:
   bool findDiagonLU(int row, int col);
   bool findDiagonLD(int row, int col);
 
+  Vector2i getClickedTile() const;
   void makeMove(int row, int col);
   void clearAvailableMoves();
+  bool addPossibleMoves();
+
+  //Helper functions//
+
   Vector2i getDirection(int src_i, int src_j, int dst_i, int dst_j);
   void changeTextureForPlayer(int row, int col);
+  bool findCapturable(int row, int col);
+  bool pieceTurn(int row, int col);
   void findWinner();
 
 public:
@@ -55,11 +64,6 @@ public:
   ~Game();
 
   bool running();
-  Vector2i getClickedTile() const;
-  bool addPossibleMoves();
-  void updateWindow();
-  bool findCapturable(int row, int col);
-  bool pieceTurn(int row, int col);
 };
 
 #endif

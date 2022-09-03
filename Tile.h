@@ -19,8 +19,8 @@ public:
   Tile() = default;
   ~Tile() = default;
   void clearSources();
-  void addSource(int i, int j);
-  void addSource(Vector2i vec);
+  void addSource(int row, int col);
+  void addSource(Vector2i location);
   Vector2i pollSource();
   void setTileTexture(Texture &new_texture, state_t new_state);
   state_t getTileState();
