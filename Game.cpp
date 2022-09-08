@@ -14,7 +14,8 @@ Game::Game() {
   }
   player_turn = WHITE;
   initBoard();
-
+  chooseMode();
+  
   addPossibleMoves();
   updateWindow();
 }
@@ -42,6 +43,16 @@ bool Game::running() {
         if (!addPossibleMoves()) {
           printf("game ended!\n");
           findWinner();
+        }
+        if(mode == PvC && player_turn == BLACK){
+          Vector2i move = artificial_intelligance.findBestMove(board,DEPTH);
+          makeMove(move.x, move.y);
+          clearAvailableMoves();
+          player_turn = WHITE;
+          if (!addPossibleMoves()) {
+            printf("game ended!\n");
+            findWinner();
+          }
         }
         updateWindow();
       }
@@ -83,9 +94,9 @@ bool Game::initTextures() {
 /// @brief Initialize the board to start the game
 void Game::initBoard() {
   for (int i = 0; i < BOARD_SIZE; i++) {
-    board.push_back(vector<Tile>());
+    board.emplace_back(vector<Tile>());
     for (int j = 0; j < BOARD_SIZE; j++) {
-      board[i].push_back(Tile());
+      board[i].emplace_back(Tile());
       board[i][j].setPosition(100 * j, 100 * i);
       board[i][j].setTileState(EMPTY);
     }
@@ -94,6 +105,49 @@ void Game::initBoard() {
   board[3][4].setTileTexture(black_pawn_texture, BLACK);
   board[4][4].setTileTexture(white_pawn_texture, WHITE);
   board[4][3].setTileTexture(black_pawn_texture, BLACK);
+}
+
+void Game::chooseMode() {
+  Font font;
+  if (!font.loadFromFile("Font.ttf")) {
+    printf("failed to load font");
+    return;
+  }
+  Text headline("Choose game mode: RED (PvP) || BLUE(PvC) ", font);
+  RectangleShape PvP(Vector2f(100, 100));
+  RectangleShape PvC(Vector2f(100, 100));
+  headline.setPosition(0, 0);
+  PvP.setPosition(0, 100);
+  PvC.setPosition(100, 100);
+  PvP.setFillColor(Color(255, 0, 0));
+  PvC.setFillColor(Color(0, 0, 255));
+  window->clear();
+  window->draw(headline);
+  window->draw(PvP);
+  window->draw(PvC);
+  window->display();
+
+  bool cond = false;
+  while (true) {
+    cond = window->pollEvent(event);
+    if (cond && event.type == Event::MouseButtonPressed) {
+      Vector2i coordinates = getClickedTile();
+      if (coordinates.x == 1) {
+        if (coordinates.y == 0) {
+          mode = gameMode_t::PvP;
+          break;
+        } else if (coordinates.y == 1) {
+          mode = gameMode_t::PvC;
+          break;
+        }
+        cond = false;
+      }
+    }
+    if (cond && event.type == Event::Closed) {
+      window->close();
+      return;
+    }
+  }
 }
 
 /// @brief Display the new board state
@@ -109,8 +163,6 @@ void Game::updateWindow() {
   }
   window->display();
 }
-
-
 
 #pragma region Finding available moves for a pawn functions.
 
@@ -302,15 +354,15 @@ bool Game::addPossibleMoves() {
   return possible_moves;
 }
 
-
 //***********************************************************************//
 //*****************************Helper functions**************************//
 //***********************************************************************//
 
-/// @brief Calculate the direction of approach from one tile to the other, 
+/// @brief Calculate the direction of approach from one tile to the other,
 ///        destination MUST be in one of the conventional directions.
 /// @return Direction vector to destination
-Vector2i Game::getDirection(int src_row, int src_col, int dst_row, int dst_col) {
+Vector2i Game::getDirection(int src_row, int src_col, int dst_row,
+                            int dst_col) {
   Vector2i vec(0, 0);
   if (src_row < dst_row) {
     vec.x = 1;
@@ -353,7 +405,8 @@ bool Game::findCapturable(int row, int col) {
   return possible_moves;
 }
 
-/// @brief Answers weather the piece in given place belongs to current player's turn
+/// @brief Answers weather the piece in given place belongs to current player's
+/// turn
 /// @param row Row coordinate
 /// @param col Colum coordinate
 bool Game::pieceTurn(int row, int col) {
@@ -364,7 +417,6 @@ bool Game::pieceTurn(int row, int col) {
   }
   return false;
 }
-
 
 void Game::findWinner() {
   int white = 0, black = 0;

@@ -5,6 +5,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <vector>
 
+
 using namespace std;
 using namespace sf;
 
@@ -17,6 +18,7 @@ private:
 
 public:
   Tile() = default;
+  Tile(const Tile& other);
   ~Tile() = default;
   void clearSources();
   void addSource(int row, int col);

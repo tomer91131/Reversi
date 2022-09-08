@@ -1,5 +1,13 @@
 #include "Tile.h"
 
+/// @brief copy constructor - only copy's state and sources,
+/// sprite part will be defaultly constructed
+Tile::Tile(const Tile& other) : Sprite(){
+  this->source = other.source;
+  this->state = other.state;
+  this->setPosition(other.getPosition());
+}
+
 /// @brief Clear the locations of pawns that can move towards this tile
 void Tile::clearSources() {
   source.clear();
